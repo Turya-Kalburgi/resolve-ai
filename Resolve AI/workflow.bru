@@ -1,0 +1,20 @@
+meta {
+  name: workflow
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://127.0.0.1:8000/payments/{payment_id}/execute-recovery?retry_count=0&simulate_success=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  retry_count: 0
+  simulate_success: true
+}
+
+settings {
+  encodeUrl: true
+}

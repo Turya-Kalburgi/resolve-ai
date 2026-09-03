@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResolveAI — Autonomous Payment Recovery Engine</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+  <div class="dashboard-wrapper">
+
+    <!-- Top Header Command Bar -->
+    <header class="top-header">
+      <div class="brand-section">
+        <div class="wordmark">ResolveAI</div>
+        <div class="subhead">Autonomous Payment Recovery & Safety Engine</div>
+        <div class="product-statement">"Detect failed payments. Diagnose recovery opportunities. Recover revenue
+          safely."</div>
+      </div>
+
+      <div class="header-right">
+        <div class="hackathon-badge">
+          <span>🏆 Built for Razorpay AI Buildathon</span>
+          <span style="opacity: 0.5;">|</span>
+          <span>Revenue Recovery Track</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button id="btnRunSimulation" class="btn-ocean" onclick="runBatchEvaluation()">
+            <span>Run 30-Payment Simulation →</span>
+          </button>
+          <button class="btn-ocean-secondary" onclick="switchView('cases')">
+            <span>View Latest Results →</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Notification Toast Banner -->
+    <div id="alertToast" class="alert-toast"></div>
+
+    <!-- Secondary Navigation & System Status Bar -->
+    <div class="subnav-bar">
+      <nav class="nav-links">
+        <span class="nav-item active" onclick="switchView('overview')">Overview</span>
+        <span class="nav-item" onclick="switchView('cases')">Cases</span>
+        <span class="nav-item" onclick="switchView('analytics')">Analytics</span>
+        <span class="nav-item" onclick="switchView('audit')">Audit</span>
+        <span class="nav-item" onclick="switchView('benchmark')">Benchmark</span>
+      </nav>
+      <div class="system-status">
+        <span><span class="status-dot"></span> System Operational</span>
+        <span style="opacity: 0.4;">|</span>
+        <span id="lastRunTime">Last run: Syncing backend...</span>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 1: OVERVIEW -->
+    <!-- ================================================================= -->
+    <div id="view-overview" class="tab-view active">
+      <!-- Editorial Hero Section -->
+      <section id="hero" class="hero-layout">
+        <!-- Hero Left: Editorial Statement & Product Intelligence -->
+        <div class="hero-left">
+          <div>
+            <h1 class="hero-headline">Turn Failed Payments<br>into Revenue.</h1>
+            <p class="hero-subtext">
+              ResolveAI uses agentic AI and policy guardrails to intelligently recover failed payments — while keeping
+              your business safe.
+            </p>
+
+            <!-- Compact Product Value Strip -->
+            <div class="product-value-strip">
+              <div class="value-item">
+                <span class="value-tag">AI-GUIDED</span>
+                <span class="value-desc">Diagnoses recovery opportunity</span>
+              </div>
+              <div class="value-item">
+                <span class="value-tag">POLICY-GUARDED</span>
+                <span class="value-desc">Blocks unsafe automation</span>
+              </div>
+              <div class="value-item">
+                <span class="value-tag">FULLY AUDITABLE</span>
+                <span class="value-desc">Records every decision</span>
+              </div>
+            </div>
+
+            <!-- Decision Journey Flow -->
+            <div class="decision-journey-box">
+              <div class="journey-header">Autonomous Decision Journey</div>
+              <div class="journey-flow-nodes">
+                <span class="journey-node">PAYMENT FAILURE</span>
+                <span class="journey-arrow">→</span>
+                <span class="journey-node">AI DIAGNOSIS</span>
+                <span class="journey-arrow">→</span>
+                <span class="journey-node">SAFETY GATE</span>
+                <span class="journey-arrow">→</span>
+                <span class="journey-node">RECOVERY</span>
+                <span class="journey-arrow">→</span>
+                <span class="journey-node journey-success">REVENUE RECOVERED</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coherent Operational Summary Bar -->
+          <div class="hero-stats-row">
+            <div class="hero-stat-item">
+              <span id="heroAnalyzed" class="hero-stat-num">30</span>
+              <span class="hero-stat-lbl">Payments Analyzed</span>
+            </div>
+            <div class="hero-stat-item">
+              <span id="heroRecovered" class="hero-stat-num" style="color: var(--status-recovered);">8</span>
+              <span class="hero-stat-lbl">Recovered</span>
+            </div>
+            <div class="hero-stat-item">
+              <span id="heroEscalated" class="hero-stat-num" style="color: var(--status-escalated);">6</span>
+              <span class="hero-stat-lbl">Human Review</span>
+            </div>
+            <div class="hero-stat-item">
+              <span id="heroBlocked" class="hero-stat-num" style="color: var(--status-blocked);">4</span>
+              <span class="hero-stat-lbl">Blocked</span>
+            </div>
+          </div>
+
+          <!-- Rotating Finance Quote Section -->
+          <div class="finance-insight-box">
+            <div class="finance-insight-header">
+              <span class="finance-insight-tag">FINANCE INSIGHT</span>
+              <span id="quoteTimerLbl" class="finance-insight-timer">Rotates every 2 min</span>
+            </div>
+            <div id="financeQuoteText" class="finance-quote-text">
+              "Rule No. 1: Never lose money. Rule No. 2: Never forget rule No. 1."
+            </div>
+            <div id="financeQuoteAuthor" class="finance-quote-author">
+              — Warren Buffett
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Right: Recovered Revenue & At-Risk Panel -->
+        <div class="hero-right-grid">
+          <!-- Visually Dominant Recovered Revenue Card -->
+          <div class="recovered-hero-card">
+            <div class="rec-card-title">
+              <span>Recovered Revenue</span>
+              <span class="rec-card-sub">(Simulated)</span>
+            </div>
+
+            <div class="currency-recovered-grid">
+              <div class="curr-rec-box">
+                <span class="curr-code">USD</span>
+                <span id="recUSD" class="curr-val">+$0.00</span>
+              </div>
+              <div class="curr-rec-box">
+                <span class="curr-code">EUR</span>
+                <span id="recEUR" class="curr-val">+€0.00</span>
+              </div>
+              <div class="curr-rec-box">
+                <span class="curr-code">GBP</span>
+                <span id="recGBP" class="curr-val">+£0.00</span>
+              </div>
+              <div class="curr-rec-box">
+                <span class="curr-code">CAD</span>
+                <span id="recCAD" class="curr-val">+$0.00</span>
+              </div>
+            </div>
+
+            <div class="rec-card-footer">
+              <span id="heroCasesFoot">30 payment-risk cases analyzed</span>
+              <span>0 Financial Side Effects</span>
+            </div>
+          </div>
+
+          <!-- Revenue at Risk Panel (by Currency) -->
+          <div class="risk-panel">
+            <div class="panel-title">
+              <span>Revenue at Risk</span>
+              <span style="font-size: 12px; font-family: var(--font-sans); color: var(--text-muted);">(by
+                Currency)</span>
+            </div>
+
+            <table class="risk-table">
+              <thead>
+                <tr>
+                  <th>Currency</th>
+                  <th>At Risk</th>
+                  <th>Recovered</th>
+                  <th>Recovery Rate</th>
+                </tr>
+              </thead>
+              <tbody id="riskTableBody">
+                <!-- Rendered dynamically via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Outcome Summary Cards Grid -->
+      <section id="outcomes">
+        <div class="outcome-cards-grid" id="outcomeCardsGrid">
+          <!-- Rendered dynamically via JS -->
+        </div>
+      </section>
+
+      <!-- Insight Block: "Why ResolveAI?" -->
+      <div class="insight-block-card">
+        <div class="insight-block-header">
+          <span class="insight-title">Automation with a stop condition.</span>
+          <div class="insight-flow-pills">
+            <span class="insight-pill">AI RECOMMENDS</span>
+            <span class="insight-arrow">→</span>
+            <span class="insight-pill">POLICY DECIDES</span>
+            <span class="insight-arrow">→</span>
+            <span class="insight-pill">WORKFLOW EXECUTES</span>
+          </div>
+        </div>
+        <p class="insight-copy">
+          ResolveAI doesn't treat every failed payment as a retry opportunity. The AI proposes an action, the policy
+          engine evaluates it, and unsafe or uncertain cases are stopped or escalated.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 2: CASES -->
+    <!-- ================================================================= -->
+    <div id="view-cases" class="tab-view">
+      <section class="cases-section">
+
+        <!-- Judge Quick Demo Shortcuts Bar -->
+        <div class="demo-archetype-bar">
+          <span class="demo-bar-lbl">Judge Quick Demo Archetypes:</span>
+          <button class="btn-demo-pill pill-recover" onclick="filterDemoArchetype('demo_sc01_01')">
+            <span>✓ 1. RECOVER Case (demo_sc01_01)</span>
+          </button>
+          <button class="btn-demo-pill pill-block" onclick="filterDemoArchetype('demo_sc03_01')">
+            <span>🛑 2. BLOCK Case (demo_sc03_01)</span>
+          </button>
+          <button class="btn-demo-pill pill-escalate" onclick="filterDemoArchetype('demo_sc07_01')">
+            <span>⚠️ 3. ESCALATE Case (demo_sc07_01)</span>
+          </button>
+        </div>
+
+        <div class="cases-header">
+          <div class="cases-title-area">
+            <h3>Recent Payment Cases</h3>
+            <p>Live view of ResolveAI decisions and outcomes.</p>
+          </div>
+
+          <div class="table-controls">
+            <div class="filter-pills">
+              <button class="filter-pill active" onclick="setFilter('ALL')">All Outcomes</button>
+              <button class="filter-pill" onclick="setFilter('RECOVERED')">Recovered</button>
+              <button class="filter-pill" onclick="setFilter('FAILED')">Failed</button>
+              <button class="filter-pill" onclick="setFilter('BLOCKED')">Blocked</button>
+              <button class="filter-pill" onclick="setFilter('ESCALATED')">Escalated</button>
+              <button class="filter-pill" onclick="setFilter('MONITORING')">Monitoring</button>
+            </div>
+            <input type="text" id="searchBox" class="search-box" placeholder="Search by Payment ID, customer..."
+              oninput="handleSearch()">
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="cases-table">
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>Amount</th>
+                <th>Currency</th>
+                <th>Initial Status</th>
+                <th>AI Strategy</th>
+                <th>Policy Decision</th>
+                <th>Outcome</th>
+                <th>Recovered</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="casesTableBody">
+              <!-- Rendered dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 3: ANALYTICS -->
+    <!-- ================================================================= -->
+    <div id="view-analytics" class="tab-view">
+      <div class="cases-header" style="border-bottom: none; padding-bottom: 0;">
+        <div class="cases-title-area">
+          <h3>Recovery Telemetry & Analytics</h3>
+          <p>Data-driven insights into recovery performance and safety gatekeeper enforcement.</p>
+        </div>
+      </div>
+
+      <!-- 1. Compact Editorial KPI Row -->
+      <div class="analytics-kpi-row">
+        <div class="analytics-kpi-card">
+          <span class="analytics-kpi-num" id="analyticsKpiTotal">30</span>
+          <span class="analytics-kpi-lbl">Total Cases</span>
+        </div>
+        <div class="analytics-kpi-card">
+          <span class="analytics-kpi-num" style="color: var(--status-recovered);" id="analyticsKpiRecovered">8</span>
+          <span class="analytics-kpi-lbl">Recovered</span>
+        </div>
+        <div class="analytics-kpi-card">
+          <span class="analytics-kpi-num" id="analyticsKpiAttempts">12</span>
+          <span class="analytics-kpi-lbl">Recovery Attempts</span>
+        </div>
+        <div class="analytics-kpi-card">
+          <span class="analytics-kpi-num" style="color: var(--status-blocked);" id="analyticsKpiBlocked">4</span>
+          <span class="analytics-kpi-lbl">Blocked</span>
+        </div>
+        <div class="analytics-kpi-card">
+          <span class="analytics-kpi-num" style="color: var(--status-escalated);" id="analyticsKpiEscalated">6</span>
+          <span class="analytics-kpi-lbl">Escalated</span>
+        </div>
+      </div>
+
+      <!-- 2. MAIN CHART: Recovery Pipeline Progression -->
+      <div class="chart-card">
+        <div class="chart-title">
+          <div>
+            <div style="font-family: var(--font-serif); font-size: 20px;">Recovery Pipeline</div>
+            <div
+              style="font-size: 13px; font-family: var(--font-sans); color: var(--text-muted); font-weight: 400; margin-top: 2px;">
+              How cases progress from payment failure to final outcome across the ResolveAI decision pipeline.
+            </div>
+          </div>
+        </div>
+        <div id="chartPipelineProgression" style="padding-top: 16px;">
+          <!-- SVG pipeline line chart rendered via JS -->
+        </div>
+      </div>
+
+      <!-- 3. SUPPORTING CHARTS ROW -->
+      <div class="analytics-grid">
+        <!-- Supporting Chart A: Recovered Revenue by Currency -->
+        <div class="chart-card">
+          <div class="chart-title">
+            <span>Recovered Revenue by Currency</span>
+            <span style="font-size: 12px; font-family: var(--font-sans); color: var(--text-muted);">Segregated (No FX
+              Sums)</span>
+          </div>
+          <div id="chartVerticalRevenue" class="vertical-chart-container">
+            <!-- Rendered dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Supporting Chart B: Recovery Rate by Currency -->
+        <div class="chart-card">
+          <div class="chart-title">
+            <span>Recovery Rate by Currency</span>
+            <span style="font-size: 12px; font-family: var(--font-sans); color: var(--text-muted);">Efficiency
+              (%)</span>
+          </div>
+          <div id="chartVerticalRate" class="vertical-chart-container">
+            <!-- Rendered dynamically via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. SAFETY SECTION: Safety Gatekeeper -->
+      <div class="chart-card safety-insight-card">
+        <div class="chart-title">
+          <span>Safety Gatekeeper</span>
+          <span style="font-size: 12px; font-family: var(--font-sans); color: var(--text-muted);">Policy
+            Enforcement</span>
+        </div>
+
+        <div class="safety-content-layout">
+          <div id="chartSafetyDecisionsCol" class="safety-columns-area">
+            <!-- Rendered dynamically via JS -->
+          </div>
+
+          <div class="safety-quote-box">
+            <div class="safety-quote-text">
+              "The AI can recommend.<br>It cannot override the safety layer."
+            </div>
+            <div class="safety-quote-sub">
+              ResolveAI enforces 6 deterministic safety rules before executing any recovery action, ensuring zero
+              financial side effects.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 4: AUDIT -->
+    <!-- ================================================================= -->
+    <div id="view-audit" class="tab-view">
+      <div class="cases-header" style="border-bottom: none; padding-bottom: 0;">
+        <div class="cases-title-area">
+          <h3>Audit Trail</h3>
+          <p>Every recovery decision. Every policy check. Every execution outcome.</p>
+        </div>
+      </div>
+
+      <!-- Audit Summary KPI Bar -->
+      <div class="audit-kpi-bar">
+        <div class="audit-kpi-item">
+          <span class="audit-kpi-num" id="auditKpiTotal">30</span>
+          <span class="audit-kpi-lbl">Total Audit Records</span>
+        </div>
+        <div class="audit-kpi-item">
+          <span class="audit-kpi-num" id="auditKpiEvaluated">30</span>
+          <span class="audit-kpi-lbl">Cases Evaluated</span>
+        </div>
+        <div class="audit-kpi-item">
+          <span class="audit-kpi-num" style="color: var(--status-recovered);">0</span>
+          <span class="audit-kpi-lbl">Financial Side Effects</span>
+        </div>
+        <div class="audit-kpi-item">
+          <span class="audit-kpi-num" id="auditKpiEscalated" style="color: var(--status-escalated);">6</span>
+          <span class="audit-kpi-lbl">Human Escalations</span>
+        </div>
+      </div>
+
+      <!-- Audit Log Data Table -->
+      <section class="cases-section">
+        <div style="overflow-x: auto;">
+          <table class="cases-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Payment ID</th>
+                <th>Risk Level</th>
+                <th>AI Strategy</th>
+                <th>Confidence</th>
+                <th>Policy Decision</th>
+                <th>Outcome</th>
+                <th>Recovered</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBodyView">
+              <!-- Rendered dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 5: BENCHMARK -->
+    <!-- ================================================================= -->
+    <div id="view-benchmark" class="tab-view">
+      <div class="cases-header" style="border-bottom: none; padding-bottom: 0;">
+        <div class="cases-title-area">
+          <h3>Safety & Recovery Benchmark Evaluation</h3>
+          <p>Truthful evaluation of recovery efficiency and safety gatekeeper enforcement across 30 synthetic payments.
+          </p>
+        </div>
+      </div>
+
+      <!-- 1. Executive Telemetry KPI Grid -->
+      <div class="benchmark-kpi-grid">
+        <div class="benchmark-kpi-card">
+          <span class="benchmark-kpi-val" id="bmKpiEvaluated">30</span>
+          <span class="benchmark-kpi-lbl">Payments Evaluated</span>
+        </div>
+        <div class="benchmark-kpi-card">
+          <span class="benchmark-kpi-val" style="color: var(--status-recovered);" id="bmKpiRecovered">8</span>
+          <span class="benchmark-kpi-lbl">Successful Recoveries</span>
+        </div>
+        <div class="benchmark-kpi-card">
+          <span class="benchmark-kpi-val" style="color: var(--status-failed);" id="bmKpiFailed">4</span>
+          <span class="benchmark-kpi-lbl">Failed Retries</span>
+        </div>
+        <div class="benchmark-kpi-card">
+          <span class="benchmark-kpi-val" style="color: var(--status-blocked);" id="bmKpiBlocked">4</span>
+          <span class="benchmark-kpi-lbl">Blocked Actions</span>
+        </div>
+        <div class="benchmark-kpi-card">
+          <span class="benchmark-kpi-val" style="color: var(--status-escalated);" id="bmKpiEscalated">6</span>
+          <span class="benchmark-kpi-lbl">Human Escalations</span>
+        </div>
+        <div class="benchmark-kpi-card">
+          <span class="benchmark-kpi-val" style="color: var(--status-recovered);">0</span>
+          <span class="benchmark-kpi-lbl">Financial Side Effects</span>
+        </div>
+      </div>
+
+      <!-- 2. RECOVERY BENCHMARK SECTION -->
+      <div class="chart-card">
+        <div class="chart-title">
+          <div>
+            <div style="font-family: var(--font-serif); font-size: 20px;">Recovery Performance by Currency</div>
+            <div
+              style="font-size: 13px; font-family: var(--font-sans); color: var(--text-muted); font-weight: 400; margin-top: 2px;">
+              Segregated monetary totals and efficiency rates. Zero cross-currency sums.
+            </div>
+          </div>
+        </div>
+
+        <table class="cases-table" style="margin-top: 12px;">
+          <thead>
+            <tr>
+              <th>Currency</th>
+              <th>Evaluated</th>
+              <th>Revenue at Risk</th>
+              <th>Revenue Recovered</th>
+              <th>Recovery Rate (%)</th>
+              <th>Success Rate (%)</th>
+              <th>Block Rate (%)</th>
+              <th>Escalation Rate (%)</th>
+            </tr>
+          </thead>
+          <tbody id="bmCurrencyTableBody">
+            <!-- Rendered dynamically via JS from /metrics/summary -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 3. SAFETY BENCHMARK SECTION — WHEN THE AGENT SHOULD NOT ACT -->
+      <div class="chart-card safety-benchmark-card">
+        <div class="chart-title">
+          <div>
+            <div style="font-family: var(--font-serif); font-size: 20px;">Safety Benchmark: When the Agent Should Not
+              Act</div>
+            <div
+              style="font-size: 13px; font-family: var(--font-sans); color: var(--text-muted); font-weight: 400; margin-top: 2px;">
+              Deterministic safety rules prevent ungoverned automation and stop unsafe recovery attempts.
+            </div>
+          </div>
+        </div>
+
+        <div class="safety-rules-grid">
+          <div class="safety-rule-node">
+            <div class="safety-rule-header">
+              <span class="safety-rule-condition">Completed Payment</span>
+              <span class="badge badge-BLOCKED">BLOCKED</span>
+            </div>
+            <div class="safety-rule-desc">RULE_001: Payment already completed cannot be re-recovered.</div>
+            <div class="safety-rule-impact">Result: 4 Cases Protected ($0.00 Risk)</div>
+          </div>
+
+          <div class="safety-rule-node">
+            <div class="safety-rule-header">
+              <span class="safety-rule-condition">Retry Limit Exceeded (≥3)</span>
+              <span class="badge badge-BLOCKED">BLOCKED</span>
+            </div>
+            <div class="safety-rule-desc">RULE_002: Max retry threshold reached; prevents gateway penalties.</div>
+            <div class="safety-rule-impact">Result: 4 Unsafe Retries Blocked</div>
+          </div>
+
+          <div class="safety-rule-node">
+            <div class="safety-rule-header">
+              <span class="safety-rule-condition">Low AI Confidence (<60%)< /span>
+                  <span class="badge badge-ESCALATED">ESCALATED</span>
+            </div>
+            <div class="safety-rule-desc">RULE_003: Ambiguous risk error code triggers mandatory human review.</div>
+            <div class="safety-rule-impact">Result: 2 Cases Escalated</div>
+          </div>
+
+          <div class="safety-rule-node">
+            <div class="safety-rule-header">
+              <span class="safety-rule-condition">Active Bank Dispute / Chargeback</span>
+              <span class="badge badge-ESCALATED">ESCALATED</span>
+            </div>
+            <div class="safety-rule-desc">RULE_004: Disputed payments halted to prevent dispute escalation.</div>
+            <div class="safety-rule-impact">Result: 4 Cases Escalated</div>
+          </div>
+
+          <div class="safety-rule-node">
+            <div class="safety-rule-header">
+              <span class="safety-rule-condition">Pending Gateway Settlement</span>
+              <span class="badge badge-MONITORING">MONITORING</span>
+            </div>
+            <div class="safety-rule-desc">Gateway settlement in progress; automated retries held.</div>
+            <div class="safety-rule-impact">Result: 4 Cases Monitored ($0.00 Recovered)</div>
+          </div>
+
+          <div class="safety-rule-node">
+            <div class="safety-rule-header">
+              <span class="safety-rule-condition">Completed / Settled Status</span>
+              <span class="badge badge-NO_ACTION">NO_ACTION</span>
+            </div>
+            <div class="safety-rule-desc">No recovery action required; payment in good standing.</div>
+            <div class="safety-rule-impact">Result: 4 No-Op Cases ($0.00 Action Required)</div>
+          </div>
+        </div>
+
+        <div class="safety-philosophy-banner">
+          <div class="philosophy-title">Optimization Philosophy</div>
+          <div class="philosophy-text">
+            ResolveAI is not optimized solely for recovery rate volume. It is optimized for <strong>SAFE DECIS      <!-- 4. AUTONOMOUS OVERSIGHT & FOLLOW-UP SECTION -->
+      <div class="chart-card oversight-section-card" style="margin-top: 32px;">
+        <div class="chart-title">
+          <div>
+            <div style="font-family: var(--font-serif); font-size: 22px; font-weight: 600; color: var(--text-ocean);">
+              Autonomous Oversight & Follow-up
+            </div>
+            <div style="font-size: 13px; font-family: var(--font-sans); color: var(--text-muted); font-weight: 400; margin-top: 2px;">
+              Continuous tracking, outcome verification, and hierarchical safety oversight after action execution.
+            </div>
+          </div>
+          <div class="pipeline-caption-badge" style="background: var(--surface-secondary); color: var(--text-ocean);">
+            <span>PROPOSED OVERSIGHT ARCHITECTURE</span>
+          </div>
+        </div>
+
+        <!-- 3-Column Layout: Priority Reminders | Structured Follow-up Windows | Hierarchical AI Oversight -->
+        <div class="oversight-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 20px;">
+          
+          <!-- Column 1: Priority Reminders -->
+          <div class="oversight-col-card" style="background: var(--surface-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-ocean); text-transform: uppercase; letter-spacing: 0.5px;">Priority Reminders Queue</span>
+              <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--surface-card); padding: 2px 8px; border-radius: 10px; border: 1px solid var(--border-color);">DEMO FOLLOW-UP</span>
+            </div>
+
+            <!-- Reminder Card 1 -->
+            <div class="reminder-card-item" style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge badge-FAILED" style="font-size: 9px; padding: 2px 6px;">HIGH PRIORITY</span>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Due: In 24h</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-ocean); margin-top: 2px;">Payment Recovery Follow-up</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Cust: <code>cust_129</code> · Amt: <strong>$150.00 USD</strong></div>
+              <div style="font-size: 11px; color: var(--text-ocean); border-top: 1px solid var(--border-subtle); padding-top: 4px; margin-top: 2px;">
+                Action: Retry prompt sent → Follow-up: Verify payment outcome
+              </div>
+            </div>
+
+            <!-- Reminder Card 2 -->
+            <div class="reminder-card-item" style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge badge-ESCALATED" style="font-size: 9px; padding: 2px 6px;">MEDIUM PRIORITY</span>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Due: In 48h</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-ocean); margin-top: 2px;">Overdue Receivable Follow-up</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Invoice: <code>rc_101</code> · Amt: <strong>€750.00 EUR</strong></div>
+              <div style="font-size: 11px; color: var(--text-ocean); border-top: 1px solid var(--border-subtle); padding-top: 4px; margin-top: 2px;">
+                Action: Reminder sent → Follow-up: Verify settlement
+              </div>
+            </div>
+
+            <!-- Reminder Card 3 -->
+            <div class="reminder-card-item" style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge badge-ESCALATED" style="font-size: 9px; padding: 2px 6px;">MEDIUM PRIORITY</span>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Due: In 24h</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-ocean); margin-top: 2px;">Checkout Abandonment Follow-up</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Session: <code>chk_01</code> · Amt: <strong>£95.00 GBP</strong></div>
+              <div style="font-size: 11px; color: var(--text-ocean); border-top: 1px solid var(--border-subtle); padding-top: 4px; margin-top: 2px;">
+                Action: Nudge sent → Follow-up: Check checkout conversion
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Structured Follow-up Windows -->
+          <div class="oversight-col-card" style="background: var(--surface-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-ocean); text-transform: uppercase; letter-spacing: 0.5px;">Structured Follow-up Logic</span>
+              <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--surface-card); padding: 2px 8px; border-radius: 10px; border: 1px solid var(--border-color);">SYNTHETIC EXAMPLE</span>
+            </div>
+
+            <!-- Decision Flow 1 -->
+            <div style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-weight: 700; color: var(--text-ocean);">Payment Recovery Outcome Window</div>
+              <div style="color: var(--text-muted); line-height: 1.4;">
+                Action Executed → Wait Outcome Window <br>
+                ├─ <strong>YES</strong> → Mark Recovered → Stop <br>
+                └─ <strong>NO</strong> → Check Retry Limit <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;├─ Retries &lt; 3 → Bounded Next Step <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;└─ Retries ≥ 3 → Escalate to Human
+              </div>
+            </div>
+
+            <!-- Decision Flow 2 -->
+            <div style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-weight: 700; color: var(--text-ocean);">Overdue Receivable Follow-up Window</div>
+              <div style="color: var(--text-muted); line-height: 1.4;">
+                Reminder Sent → Wait 48 Hours <br>
+                ├─ <strong>YES</strong> → Payment Received → Mark Paid <br>
+                └─ <strong>NO</strong> → Evaluate Next Action <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;├─ Under Limit → Permitted Reminder <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;└─ Limit Exceeded → Escalate to Human
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 3: Hierarchical AI Oversight -->
+          <div class="oversight-col-card" style="background: var(--surface-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-ocean); text-transform: uppercase; letter-spacing: 0.5px;">Multi-Level AI Oversight</span>
+              <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--surface-card); padding: 2px 8px; border-radius: 10px; border: 1px solid var(--border-color);">PROPOSED MODEL</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 11px;">
+                <div style="font-weight: 700; color: var(--text-ocean);">Level 1: Recovery Agent</div>
+                <div style="color: var(--text-muted);">Detects opportunity · Diagnoses · Proposes strategy</div>
+              </div>
+              <div style="text-align: center; color: var(--border-color); font-weight: 700; font-size: 11px;">↓</div>
+              <div style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 11px;">
+                <div style="font-weight: 700; color: var(--text-ocean);">Level 2: Review Agent</div>
+                <div style="color: var(--text-muted);">Validates reasoning · Checks evidence · Policy check</div>
+              </div>
+              <div style="text-align: center; color: var(--border-color); font-weight: 700; font-size: 11px;">↓</div>
+              <div style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 11px;">
+                <div style="font-weight: 700; color: var(--text-ocean);">Level 3: Guardian Oversight</div>
+                <div style="color: var(--text-muted);">Monitors exceptions · Halts repeated failures</div>
+              </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 8px; font-family: var(--font-serif); font-size: 12px; font-style: italic; font-weight: 600; color: var(--text-ocean); text-align: center;">
+              "AI recommends. AI reviews. Policy decides. Humans handle exceptions."
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 4. Summary Strip -->
+        <div style="margin-top: 24px; background: var(--surface-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--text-ocean);">
+            <span class="insight-pill">REMEMBER</span>
+            <span class="insight-arrow">→</span>
+            <span class="insight-pill">FOLLOW UP</span>
+            <span class="insight-arrow">→</span>
+            <span class="insight-pill">VERIFY</span>
+            <span class="insight-arrow">→</span>
+            <span class="insight-pill" style="background: var(--status-escalated-bg); color: var(--status-escalated);">ESCALATE</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); max-width: 600px; line-height: 1.4;">
+            Autonomous recovery should not end when an action is executed. ResolveAI keeps track of the next outcome, verifies the result, and escalates when confidence or policy limits are reached.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Right-Side Payment Decision Trace Drawer Panel -->
+  <div id="traceOverlay" class="trace-overlay" onclick="closeTraceOnOverlay(event)">
+    <div class="trace-drawer">
+      <div class="drawer-top">
+        <div>
+          <div class="drawer-payment-title" id="drawerPaymentTitle">Payment Trace</div>
+          <div class="drawer-payment-meta" id="drawerPaymentMeta">Select a payment case to inspect</div>
+        </div>
+        <button class="btn-drawer-close" onclick="closeTraceDrawer()">&times;</button>
+      </div>
+
+      <div class="drawer-body" id="drawerBody">
+        <!-- Rendered dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/quotes.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+
+</html>
+<div class="safety-rule-impact">Result: 4 Cases Monitored ($0.00 Recovered)</div>
+</div>
+
+<div class="safety-rule-node">
+  <div class="safety-rule-header">
+    <span class="safety-rule-condition">Completed / Settled Status</span>
+    <span class="badge badge-NO_ACTION">NO_ACTION</span>
+  </div>
+  <div class="safety-rule-desc">No recovery action required; payment in good standing.</div>
+  <div class="safety-rule-impact">Result: 4 No-Op Cases ($0.00 Action Required)</div>
+</div>
+</div>
+
+<div class="safety-philosophy-banner">
+  <div class="philosophy-title">Optimization Philosophy</div>
+  <div class="philosophy-text">
+    ResolveAI is not optimized solely for recovery rate volume. It is optimized for <strong>SAFE DECISION
+      MAKING</strong>. The policy engine enforces 6 deterministic safety rules before executing any recovery workflow,
+    ensuring zero financial side effects.
+  </div>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- Right-Side Payment Decision Trace Drawer Panel -->
+<div id="traceOverlay" class="trace-overlay" onclick="closeTraceOnOverlay(event)">
+  <div class="trace-drawer">
+    <div class="drawer-top">
+      <div>
+        <div class="drawer-payment-title" id="drawerPaymentTitle">Payment Trace</div>
+        <div class="drawer-payment-meta" id="drawerPaymentMeta">Select a payment case to inspect</div>
+      </div>
+      <button class="btn-drawer-close" onclick="closeTraceDrawer()">&times;</button>
+    </div>
+
+    <div class="drawer-body" id="drawerBody">
+      <!-- Rendered dynamically via JS -->
+    </div>
+  </div>
+</div>
+
+<script src="/static/quotes.js"></script>
+<script src="/static/cinematic.js"></script>
+<script src="/static/app.js"></script>
+</body>
+
+</html>

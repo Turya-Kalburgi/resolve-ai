@@ -1,0 +1,16 @@
+# Vercel & Environment
+.vercel
+.env*
+.env.local
+
+# Python & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+
+# Databases & OS
+*.db
+.DS_Store

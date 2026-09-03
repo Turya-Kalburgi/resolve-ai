@@ -1,0 +1,19 @@
+meta {
+  name: policy
+  type: http
+  seq: 4
+}
+
+get {
+  url: GET http://127.0.0.1:8000/payments/{payment_id}/policy?retry_count=0
+  body: none
+  auth: inherit
+}
+
+params:query {
+  retry_count: 0
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,19 @@
+meta {
+  name: evaluate_batch
+  type: http
+  seq: 8
+}
+
+post {
+  url: http://127.0.0.1:8000/payments/evaluate-batch?reset_db=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  reset_db: true
+}
+
+settings {
+  encodeUrl: true
+}
