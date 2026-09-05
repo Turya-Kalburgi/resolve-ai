@@ -291,7 +291,7 @@ function renderCasesTable() {
         ${log.recovered_amount > 0 ? '+' + sym + log.recovered_amount.toFixed(2) : sym + '0.00'}
       </td>
       <td>
-        <button class="btn-inspect-link" onclick="inspectTrace('${log.payment_id}')">View Trace →</button>
+        <button class="btn-inspect-link" onclick="showTrace('${log.payment_id}')">View Trace →</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -548,7 +548,7 @@ function renderAuditTable() {
         ${log.recovered_amount > 0 ? '+' + sym + log.recovered_amount.toFixed(2) : sym + '0.00'}
       </td>
       <td>
-        <button class="btn-inspect-link" onclick="inspectTrace('${log.payment_id}')">View Audit Trail →</button>
+        <button class="btn-inspect-link" onclick="showTrace('${log.payment_id}')">View Audit Trail →</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -588,6 +588,10 @@ function filterDemoArchetype(paymentId) {
   inspectTrace(paymentId);
 }
 
+function showTrace(paymentId) {
+  inspectTrace(paymentId);
+}
+
 function inspectTrace(paymentId) {
   const log = auditLogs.find(l => l.payment_id === paymentId);
   if (!log) return;
@@ -604,8 +608,10 @@ function inspectTrace(paymentId) {
   const humanAction = actionLabelMap[log.action_type] || log.action_type;
   const confPct = Math.round(log.ai_confidence_score * 100);
 
-  document.getElementById('drawerPaymentTitle').textContent = `Payment Trace: ${log.payment_id}`;
-  document.getElementById('drawerPaymentMeta').textContent = `${sym}${log.amount.toFixed(2)} ${log.currency} · Customer: ${log.customer_id} · Audit ID: ${log.id}`;
+  const titleEl = document.getElementById('drawerPaymentTitle');
+  if (titleEl) titleEl.textContent = `Payment Trace: ${log.payment_id}`;
+  const metaEl = document.getElementById('drawerPaymentMeta');
+  if (metaEl) metaEl.textContent = `${sym}${log.amount.toFixed(2)} ${log.currency} · Customer: ${log.customer_id} · Audit ID: ${log.id}`;
 
   const body = document.getElementById('drawerBody');
 
@@ -635,7 +641,7 @@ function inspectTrace(paymentId) {
     outcomeDetail = `Payment ESCALATED for mandatory human review. Automated execution halted.`;
   }
 
-  body.innerHTML = `
+  const timelineHtml = `
     <div class="timeline">
 
       <!-- Step 1: Input -->
@@ -780,7 +786,42 @@ function inspectTrace(paymentId) {
     </div>
   `;
 
-  document.getElementById('traceOverlay').classList.add('active');
+  if (body) {
+    body.innerHTML = timelineHtml;
+  }
+
+  const overlay = document.getElementById('traceOverlay');
+  if (overlay) {
+    overlay.style.cssText = "display: flex !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 999999 !important; background: rgba(44, 54, 90, 0.4) !important;";
+    overlay.classList.add('active');
+    const drawer = overlay.querySelector('.trace-drawer');
+    if (drawer) {
+      drawer.style.cssText = "transform: translateX(0) !important; opacity: 1 !important; visibility: visible !important; display: flex !important; background: #EEE8DF !important;";
+    }
+  }
+
+  // Standalone guaranteed emergency modal attached directly to document.body
+  const existingModal = document.getElementById('emergencyTraceModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'emergencyTraceModal';
+  modal.style.cssText = "position: fixed !important; top: 0 !important; right: 0 !important; width: 640px !important; max-width: 90vw !important; height: 100vh !important; z-index: 2147483647 !important; background: #EEE8DF !important; color: #2C365A !important; overflow-y: auto !important; padding: 28px !important; box-sizing: border-box !important; box-shadow: -10px 0 40px rgba(0,0,0,0.3) !important; font-family: system-ui, -apple-system, sans-serif !important;";
+
+  modal.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #D4CEB8; padding-bottom: 16px; margin-bottom: 20px;">
+      <div>
+        <div style="font-family: Georgia, serif; font-size: 22px; font-weight: 700; color: #2C365A;">Payment Trace: ${log.payment_id}</div>
+        <div style="font-size: 13px; color: #5C6684; margin-top: 4px;">${sym}${log.amount.toFixed(2)} ${log.currency} · Customer: ${log.customer_id} · Audit ID: ${log.id}</div>
+      </div>
+      <button onclick="closeTraceDrawer()" style="background: #2C365A; color: #FAF7F2; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">✕ CLOSE TRACE</button>
+    </div>
+    ${timelineHtml}
+  `;
+
+  document.body.appendChild(modal);
 }
 
 function toggleCollapsible(id) {
@@ -791,7 +832,20 @@ function toggleCollapsible(id) {
 }
 
 function closeTraceDrawer() {
-  document.getElementById('traceOverlay').classList.remove('active');
+  const modal = document.getElementById('emergencyTraceModal');
+  if (modal) {
+    modal.remove();
+  }
+
+  const overlay = document.getElementById('traceOverlay');
+  if (overlay) {
+    overlay.style.cssText = "display: none !important; opacity: 0 !important; pointer-events: none !important;";
+    overlay.classList.remove('active');
+    const drawer = overlay.querySelector('.trace-drawer');
+    if (drawer) {
+      drawer.style.cssText = "transform: translateX(100%) !important;";
+    }
+  }
 }
 
 function closeTraceOnOverlay(e) {
@@ -799,6 +853,9 @@ function closeTraceOnOverlay(e) {
     closeTraceDrawer();
   }
 }
+
+window.showTrace = showTrace;
+window.inspectTrace = inspectTrace;
 
 async function runBatchEvaluation() {
   const btn = document.getElementById('btnRunSimulation');
